@@ -1,0 +1,25 @@
+# Answers for TP Intro Supervised
+
+The `class_int_round` helper function is a practical bridge between regression outputs and class predictions. A linear regressor predicts continuous values, while the target in classification is discrete. The function first clips each prediction to stay inside the valid class range and then rounds to the nearest integer label. The clipping step avoids impossible labels and the rounding step converts continuous estimates into a final class decision.
+
+When comparing direct integer-label regression with one-hot encoding plus regression, the one-hot strategy is more appropriate for classification. Regressing on integer labels imposes an artificial order and equal spacing between classes, which is not part of the classification problem itself. With one-hot encoding, each class is represented independently and the decision is made by taking the largest predicted component, which generally leads to cleaner and more coherent class regions.
+
+The different classifiers used in the practical session learn different types of decision boundaries. Logistic regression and LDA tend to produce linear boundaries in the original feature space. QDA can model curved boundaries because each class has its own covariance structure. Naive Bayes can also produce non-linear separations depending on distribution assumptions. KNN is non-parametric and can follow highly irregular boundaries since predictions depend on local neighborhoods. This is why model performance changes across scenarios: if class geometry is close to linear, linear models are very competitive; if classes are curved or locally structured, flexible models often improve accuracy.
+
+Computational cost follows the same logic. Linear models are usually fast to train and predict. KNN is cheap at training time but can be slower at prediction time because distances to training points must be computed. QDA can become unstable with limited samples or poorly estimated covariances. In practice, there is always a trade-off between flexibility, robustness, and speed.
+
+In the FEI landmark section, shuffling the dataset before splitting is important because ordered data can create biased train/test partitions. If images are grouped by subject, session, or expression sequence, the split may no longer represent an unbiased sample of future data. Random shuffling improves the validity of evaluation.
+
+Scaling and normalization should be considered whenever feature magnitudes differ, especially for distance-based methods such as KNN and for optimization-based methods like logistic regression. Standardization centers and rescales features to unit variance, while MinMax normalization maps features to a fixed interval. Both can improve optimization stability and fair feature weighting.
+
+All preprocessing transformations must be fitted on the training data only, then applied to validation/test data using the learned parameters. This prevents information leakage. If test statistics are used during fitting, evaluation becomes optimistic and no longer reflects real generalization.
+
+For model comparison, cross-validation is preferred over a single split because it reduces dependence on one random partition. When preprocessing is required, it must be embedded inside a pipeline so that each fold computes scaling using only its own training subset. This is the correct protocol for fair cross-validated performance estimates.
+
+For KNN hyperparameter tuning, selecting the best value of K on the same data used for final reporting can overestimate performance. A cleaner workflow separates tuning from final evaluation, either with a dedicated hold-out test set or with nested cross-validation. Nested CV provides a less biased estimate because the inner loop tunes hyperparameters and the outer loop evaluates generalization.
+
+The feature set based on distances to the mean face is intuitive but may miss discriminative interactions between landmarks. Pairwise landmark distances introduce richer geometric information but also add many redundant and collinear variables. Dimensionality reduction methods such as PCA are useful in this setting: they compress correlated variables into a smaller set of components while preserving most variance, which can improve stability and sometimes predictive performance.
+
+Model errors on facial-expression recognition are often linked to ambiguous expressions, subtle smiles, subject variability, annotation noise, pose differences, or partial loss of information when only a subset of landmarks is used. This is why manual landmark selection can help in some cases but may fail in others if important regions are excluded.
+
+A strong extension is to combine geometric and appearance information. For example, one can use geometric descriptors from mouth, eye, and eyebrow regions together with local pixel-intensity descriptors from aligned patches around these areas. Hybrid features often improve discrimination because they capture both shape deformation and texture cues associated with facial expressions.
